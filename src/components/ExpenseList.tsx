@@ -14,6 +14,7 @@ interface Expense {
   category: string;
   paidBy: string;
   date: string;
+  image?: string | null;
 }
 
 export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
@@ -27,6 +28,7 @@ export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
             <TableHead>Category</TableHead>
             <TableHead>Paid By</TableHead>
             <TableHead>When</TableHead>
+            <TableHead>Receipt</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -42,6 +44,15 @@ export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
                 {formatDistance(new Date(expense.date), new Date(), {
                   addSuffix: true,
                 })}
+              </TableCell>
+              <TableCell>
+                {expense.image && (
+                  <img
+                    src={expense.image}
+                    alt="Receipt"
+                    className="w-16 h-16 object-cover rounded cursor-pointer hover:scale-150 transition-transform"
+                  />
+                )}
               </TableCell>
             </TableRow>
           ))}

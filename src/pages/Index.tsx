@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { DashboardStats } from "@/components/DashboardStats";
@@ -9,10 +9,18 @@ interface Expense {
   category: string;
   paidBy: string;
   date: string;
+  image?: string | null;
 }
 
 const Index = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    const savedExpenses = localStorage.getItem("expenses");
+    return savedExpenses ? JSON.parse(savedExpenses) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+  }, [expenses]);
 
   const handleAddExpense = (expense: Expense) => {
     setExpenses([expense, ...expenses]);
