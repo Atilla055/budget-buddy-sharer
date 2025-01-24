@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { DashboardStats } from "@/components/DashboardStats";
-import { collection, addDoc, onSnapshot, query, orderBy, DocumentData } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, QueryDocumentSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
 
@@ -19,29 +19,39 @@ const Index = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
   useEffect(() => {
-    const q = query(collection(db, "expenses"), orderBy("date", "desc"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const expensesData = querySnapshot.docs.map((doc: DocumentData) => {
-        const data = doc.data();
-        return {
-          amount: Number(data.amount),
-          description: String(data.description),
-          category: String(data.category),
-          paidBy: String(data.paidBy),
-          date: String(data.date),
-          image: data.image || null
-        } as Expense;
+    try {
+      const q = query(collection(db, "expenses"), orderBy("date", "desc"));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const expensesData = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => {
+          const data = doc.data();
+          // Ensure we only extract the fields we need and convert them to the correct types
+          return {
+            amount: Number(data.amount) || 0,
+            description: String(data.description || ""),
+            category: String(data.category || ""),
+            paidBy: String(data.paidBy || ""),
+            date: String(data.date || new Date().toISOString()),
+            image: data.image || null
+          };
+        });
+        setExpenses(expensesData);
       });
-      setExpenses(expensesData);
-    });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    } catch (error) {
+      console.error("Error in expenses subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load expenses",
+        variant: "destructive",
+      });
+    }
   }, []);
 
   const handleAddExpense = async (expense: Expense) => {
     try {
-      // Ensure the data is serializable before adding to Firestore
-      const serializedExpense = {
+      // Create a clean object with only the fields we need
+      const cleanExpense = {
         amount: Number(expense.amount),
         description: String(expense.description),
         category: String(expense.category),
@@ -50,7 +60,7 @@ const Index = () => {
         image: expense.image || null
       };
       
-      await addDoc(collection(db, "expenses"), serializedExpense);
+      await addDoc(collection(db, "expenses"), cleanExpense);
       toast({
         title: "Success",
         description: "Expense added successfully",
