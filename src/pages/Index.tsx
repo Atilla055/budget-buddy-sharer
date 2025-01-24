@@ -24,13 +24,14 @@ const Index = () => {
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const expensesData = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => {
           const data = doc.data();
+          // Create a clean, serializable object
           return {
             amount: Number(data.amount) || 0,
             description: String(data.description || ""),
             category: String(data.category || ""),
             paidBy: String(data.paidBy || ""),
             date: String(data.date || new Date().toISOString()),
-            image: data.image || null
+            image: data.image ? String(data.image) : null
           };
         });
         setExpenses(expensesData);
@@ -49,13 +50,14 @@ const Index = () => {
 
   const handleAddExpense = async (expense: Expense) => {
     try {
+      // Create a clean object before storing
       const cleanExpense = {
         amount: Number(expense.amount),
         description: String(expense.description),
         category: String(expense.category),
         paidBy: String(expense.paidBy),
         date: new Date().toISOString(),
-        image: expense.image || null
+        image: expense.image ? String(expense.image) : null
       };
       
       await addDoc(collection(db, "expenses"), cleanExpense);
