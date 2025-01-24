@@ -7,6 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Expense {
   amount: number;
@@ -18,38 +24,53 @@ interface Expense {
 }
 
 export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="rounded-lg border bg-white">
+    <div className="rounded-lg border bg-white overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Məbləğ</TableHead>
-            <TableHead>Təsvir</TableHead>
-            <TableHead>Kateqoriya</TableHead>
-            <TableHead>Ödəyən</TableHead>
-            <TableHead>Tarix</TableHead>
-            <TableHead>Qəbz</TableHead>
+            <TableHead className="whitespace-nowrap">Məbləğ</TableHead>
+            <TableHead className="whitespace-nowrap">Təsvir</TableHead>
+            <TableHead className="whitespace-nowrap">Kateqoriya</TableHead>
+            <TableHead className="whitespace-nowrap">Ödəyən</TableHead>
+            <TableHead className="whitespace-nowrap">Tarix</TableHead>
+            <TableHead className="whitespace-nowrap">Qəbz</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {expenses.map((expense, index) => (
             <TableRow key={index}>
-              <TableCell className="font-medium">
+              <TableCell className="font-medium whitespace-nowrap">
                 ₼{expense.amount.toFixed(2)}
               </TableCell>
-              <TableCell>{expense.description}</TableCell>
-              <TableCell>{expense.category}</TableCell>
-              <TableCell>{expense.paidBy}</TableCell>
-              <TableCell>
+              <TableCell className="max-w-[200px] truncate">
+                {expense.description}
+              </TableCell>
+              <TableCell className="whitespace-nowrap">{expense.category}</TableCell>
+              <TableCell className="whitespace-nowrap">{expense.paidBy}</TableCell>
+              <TableCell className="whitespace-nowrap">
                 {format(new Date(expense.date), "dd.MM.yyyy HH:mm")}
               </TableCell>
               <TableCell>
                 {expense.image && (
-                  <img
-                    src={expense.image}
-                    alt="Qəbz"
-                    className="w-16 h-16 object-cover rounded cursor-pointer hover:scale-150 transition-transform"
-                  />
+                  <Dialog>
+                    <DialogTrigger>
+                      <img
+                        src={expense.image}
+                        alt="Qəbz"
+                        className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                      />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
+                      <img
+                        src={expense.image}
+                        alt="Qəbz"
+                        className="w-full h-full object-contain"
+                      />
+                    </DialogContent>
+                  </Dialog>
                 )}
               </TableCell>
             </TableRow>
