@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { DashboardStats } from "@/components/DashboardStats";
+import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { toast } from "@/components/ui/use-toast";
 
 interface Expense {
   amount: number;
@@ -13,17 +16,32 @@ interface Expense {
 }
 
 const Index = () => {
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const savedExpenses = localStorage.getItem("expenses");
-    return savedExpenses ? JSON.parse(savedExpenses) : [];
-  });
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-  }, [expenses]);
+    const q = query(collection(db, "expenses"), orderBy("date", "desc"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const expensesData = querySnapshot.docs.map(doc => doc.data() as Expense);
+      setExpenses(expensesData);
+    });
 
-  const handleAddExpense = (expense: Expense) => {
-    setExpenses([expense, ...expenses]);
+    return () => unsubscribe();
+  }, []);
+
+  const handleAddExpense = async (expense: Expense) => {
+    try {
+      await addDoc(collection(db, "expenses"), expense);
+      toast({
+        title: "Success",
+        description: "Expense added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add expense",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
