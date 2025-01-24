@@ -13,11 +13,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { ImagePlus } from "lucide-react";
 
 const CATEGORIES = [
-  "Utilities",
-  "Groceries",
-  "Household Items",
-  "Maintenance",
-  "Other",
+  "Kommunal",
+  "Ərzaq",
+  "Ev əşyaları",
+  "Təmir",
+  "Digər",
 ];
 
 const ROOMMATES = ["Ehed", "Atilla", "Behruz", "Qosqar"];
@@ -45,8 +45,8 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
     e.preventDefault();
     if (!amount || !description || !category || !paidBy) {
       toast({
-        title: "Error",
-        description: "Please fill in all fields",
+        title: "Xəta",
+        description: "Bütün sahələri doldurun",
         variant: "destructive",
       });
       return;
@@ -68,15 +68,15 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
     setImage(null);
 
     toast({
-      title: "Success",
-      description: "Expense added successfully",
+      title: "Uğurlu",
+      description: "Xərc uğurla əlavə edildi",
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-white rounded-lg shadow">
       <div className="space-y-2">
-        <Label htmlFor="amount">Amount</Label>
+        <Label htmlFor="amount">Məbləğ</Label>
         <Input
           id="amount"
           type="number"
@@ -88,20 +88,20 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">Təsvir</Label>
         <Input
           id="description"
-          placeholder="What was this expense for?"
+          placeholder="Bu xərc nə üçün idi?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="category">Kateqoriya</Label>
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger>
-            <SelectValue placeholder="Select category" />
+            <SelectValue placeholder="Kateqoriya seçin" />
           </SelectTrigger>
           <SelectContent>
             {CATEGORIES.map((cat) => (
@@ -114,10 +114,10 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="paidBy">Paid By</Label>
+        <Label htmlFor="paidBy">Ödəyən</Label>
         <Select value={paidBy} onValueChange={setPaidBy}>
           <SelectTrigger>
-            <SelectValue placeholder="Who paid?" />
+            <SelectValue placeholder="Kim ödədi?" />
           </SelectTrigger>
           <SelectContent>
             {ROOMMATES.map((name) => (
@@ -130,7 +130,7 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">Receipt Image</Label>
+        <Label htmlFor="image">Qəbz şəkli</Label>
         <div className="flex items-center gap-2">
           <Input
             id="image"
@@ -145,18 +145,18 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
             onClick={() => document.getElementById("image")?.click()}
           >
             <ImagePlus className="w-4 h-4 mr-2" />
-            Upload Receipt
+            Qəbz yüklə
           </Button>
         </div>
         {image && (
           <div className="mt-2">
-            <img src={image} alt="Receipt" className="max-w-xs rounded-lg" />
+            <img src={image} alt="Qəbz" className="max-w-xs rounded-lg" />
           </div>
         )}
       </div>
 
       <Button type="submit" className="w-full">
-        Add Expense
+        Xərc əlavə et
       </Button>
     </form>
   );

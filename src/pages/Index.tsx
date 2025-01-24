@@ -24,7 +24,6 @@ const Index = () => {
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const expensesData = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => {
           const data = doc.data();
-          // Ensure we only extract the fields we need and convert them to the correct types
           return {
             amount: Number(data.amount) || 0,
             description: String(data.description || ""),
@@ -41,8 +40,8 @@ const Index = () => {
     } catch (error) {
       console.error("Error in expenses subscription:", error);
       toast({
-        title: "Error",
-        description: "Failed to load expenses",
+        title: "Xəta",
+        description: "Xərcləri yükləmək mümkün olmadı",
         variant: "destructive",
       });
     }
@@ -50,26 +49,25 @@ const Index = () => {
 
   const handleAddExpense = async (expense: Expense) => {
     try {
-      // Create a clean object with only the fields we need
       const cleanExpense = {
         amount: Number(expense.amount),
         description: String(expense.description),
         category: String(expense.category),
         paidBy: String(expense.paidBy),
-        date: String(expense.date),
+        date: new Date().toISOString(),
         image: expense.image || null
       };
       
       await addDoc(collection(db, "expenses"), cleanExpense);
       toast({
-        title: "Success",
-        description: "Expense added successfully",
+        title: "Uğurlu",
+        description: "Xərc uğurla əlavə edildi",
       });
     } catch (error) {
       console.error("Error adding expense:", error);
       toast({
-        title: "Error",
-        description: "Failed to add expense",
+        title: "Xəta",
+        description: "Xərc əlavə etmək mümkün olmadı",
         variant: "destructive",
       });
     }
@@ -78,7 +76,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container py-8">
-        <h1 className="text-4xl font-bold mb-8 text-gray-900">Household Expenses</h1>
+        <h1 className="text-4xl font-bold mb-8 text-gray-900">Ev Xərcləri</h1>
         
         <div className="mb-8">
           <DashboardStats expenses={expenses} />
@@ -86,12 +84,12 @@ const Index = () => {
 
         <div className="grid gap-8 md:grid-cols-[400px,1fr]">
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Add New Expense</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Yeni Xərc Əlavə Et</h2>
             <ExpenseForm onSubmit={handleAddExpense} />
           </div>
           
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Recent Expenses</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Son Xərclər</h2>
             <ExpenseList expenses={expenses} />
           </div>
         </div>

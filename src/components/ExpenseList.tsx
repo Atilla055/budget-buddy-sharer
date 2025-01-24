@@ -1,4 +1,4 @@
-import { formatDistance } from "date-fns";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -23,33 +23,31 @@ export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Amount</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Paid By</TableHead>
-            <TableHead>When</TableHead>
-            <TableHead>Receipt</TableHead>
+            <TableHead>Məbləğ</TableHead>
+            <TableHead>Təsvir</TableHead>
+            <TableHead>Kateqoriya</TableHead>
+            <TableHead>Ödəyən</TableHead>
+            <TableHead>Tarix</TableHead>
+            <TableHead>Qəbz</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {expenses.map((expense, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium">
-                ${expense.amount.toFixed(2)}
+                ₼{expense.amount.toFixed(2)}
               </TableCell>
               <TableCell>{expense.description}</TableCell>
               <TableCell>{expense.category}</TableCell>
               <TableCell>{expense.paidBy}</TableCell>
               <TableCell>
-                {formatDistance(new Date(expense.date), new Date(), {
-                  addSuffix: true,
-                })}
+                {format(new Date(expense.date), "dd.MM.yyyy HH:mm")}
               </TableCell>
               <TableCell>
                 {expense.image && (
                   <img
                     src={expense.image}
-                    alt="Receipt"
+                    alt="Qəbz"
                     className="w-16 h-16 object-cover rounded cursor-pointer hover:scale-150 transition-transform"
                   />
                 )}

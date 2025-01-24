@@ -22,35 +22,35 @@ export const DashboardStats = ({ expenses }: DashboardStatsProps) => {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+          <CardTitle className="text-sm font-medium">Ümumi Xərclər</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">
-            ${totalExpenses.toFixed(2)}
+            ₼{totalExpenses.toFixed(2)}
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Per Person</CardTitle>
+          <CardTitle className="text-sm font-medium">Adam başına</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${perPersonShare.toFixed(2)}</div>
+          <div className="text-2xl font-bold">₼{perPersonShare.toFixed(2)}</div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">This Month</CardTitle>
+          <CardTitle className="text-sm font-medium">Bu ay</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${totalExpenses.toFixed(2)}
+            ₼{totalExpenses.toFixed(2)}
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Expenses Count</CardTitle>
+          <CardTitle className="text-sm font-medium">Xərc sayı</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{expenses.length}</div>
