@@ -31,7 +31,7 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
     )
   ).sort().reverse();
 
-  const calculateRefunds = (expenses: Expense[], month: string) => {
+  const calculateOwed = (expenses: Expense[], month: string) => {
     const startDate = startOfMonth(parse(month, "yyyy-MM", new Date()));
     const endDate = endOfMonth(parse(month, "yyyy-MM", new Date()));
 
@@ -40,33 +40,29 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
       return expenseDate >= startDate && expenseDate <= endDate;
     });
 
-    const refundsByPerson: Record<string, { total: number; items: string[] }> = {};
+    const owedByPerson: Record<string, { total: number; items: string[] }> = {};
     const ROOMMATES = ["Ehed", "Atilla", "Behruz", "Qosqar"];
 
     ROOMMATES.forEach(person => {
-      refundsByPerson[person] = { total: 0, items: [] };
+      owedByPerson[person] = { total: 0, items: [] };
     });
 
     monthlyExpenses.forEach(expense => {
       const shareAmount = expense.amount / expense.sharedWith.length;
       
-      // Calculate how much the payer should receive back
-      if (expense.paidBy) {
-        const totalRefund = expense.amount - (expense.sharedWith.includes(expense.paidBy) ? shareAmount : 0);
-        refundsByPerson[expense.paidBy].total += totalRefund;
-        refundsByPerson[expense.paidBy].items.push(expense.description);
-      }
-
-      // Calculate how much each person should pay back
       expense.sharedWith.forEach(person => {
         if (person !== expense.paidBy) {
-          refundsByPerson[person].total -= shareAmount;
-          refundsByPerson[person].items.push(expense.description);
+          owedByPerson[person].total += shareAmount;
+          owedByPerson[person].items.push(expense.description);
         }
       });
+
+      if (expense.paidBy && expense.sharedWith.includes(expense.paidBy)) {
+        owedByPerson[expense.paidBy].total -= (expense.amount - shareAmount);
+      }
     });
 
-    return refundsByPerson;
+    return owedByPerson;
   };
 
   return (
@@ -83,17 +79,17 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Şəxs</TableHead>
-                  <TableHead>Məbləğ</TableHead>
+                  <TableHead>Ödəniləcək məbləğ</TableHead>
                   <TableHead>Bölüşdürülmüş məhsullar</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.entries(calculateRefunds(expenses, month)).map(([person, data]) => (
+                {Object.entries(calculateOwed(expenses, month)).map(([person, data]) => (
                   <TableRow key={person}>
                     <TableCell>{person}</TableCell>
-                    <TableCell className={data.total > 0 ? "text-green-500" : "text-red-500"}>
+                    <TableCell className={data.total > 0 ? "text-red-500" : "text-green-500"}>
                       ₼{Math.abs(data.total).toFixed(2)}
-                      {data.total > 0 ? " (alacağı var)" : " (ödəməlidir)"}
+                      {data.total > 0 ? " (borcu var)" : " (alacağı var)"}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate">
                       {data.items.join(", ")}
