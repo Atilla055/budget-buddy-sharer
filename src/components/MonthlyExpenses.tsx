@@ -40,29 +40,27 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
       return expenseDate >= startDate && expenseDate <= endDate;
     });
 
-    const owedByPerson: Record<string, { total: number; items: string[] }> = {};
+    const balances: Record<string, { total: number; items: string[] }> = {};
     const ROOMMATES = ["Ehed", "Atilla", "Behruz", "Qosqar"];
 
     ROOMMATES.forEach(person => {
-      owedByPerson[person] = { total: 0, items: [] };
+      balances[person] = { total: 0, items: [] };
     });
 
     monthlyExpenses.forEach(expense => {
       const shareAmount = expense.amount / expense.sharedWith.length;
       
+      // Add the full amount to what the payer has paid
+      balances[expense.paidBy].total += expense.amount;
+      
+      // Subtract each person's share from their balance
       expense.sharedWith.forEach(person => {
-        if (person !== expense.paidBy) {
-          owedByPerson[person].total += shareAmount;
-          owedByPerson[person].items.push(expense.description);
-        }
+        balances[person].total -= shareAmount;
+        balances[person].items.push(expense.description);
       });
-
-      if (expense.paidBy && expense.sharedWith.includes(expense.paidBy)) {
-        owedByPerson[expense.paidBy].total -= (expense.amount - shareAmount);
-      }
     });
 
-    return owedByPerson;
+    return balances;
   };
 
   return (
@@ -79,7 +77,7 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Şəxs</TableHead>
-                  <TableHead>Ödəniləcək məbləğ</TableHead>
+                  <TableHead>Balans</TableHead>
                   <TableHead>Bölüşdürülmüş məhsullar</TableHead>
                 </TableRow>
               </TableHeader>
@@ -87,9 +85,10 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
                 {Object.entries(calculateOwed(expenses, month)).map(([person, data]) => (
                   <TableRow key={person}>
                     <TableCell>{person}</TableCell>
-                    <TableCell className={data.total > 0 ? "text-red-500" : "text-green-500"}>
-                      ₼{Math.abs(data.total).toFixed(2)}
-                      {data.total > 0 ? " (borcu var)" : " (alacağı var)"}
+                    <TableCell className={data.total >= 0 ? "text-green-500" : "text-red-500"}>
+                      {data.total >= 0 
+                        ? `${data.total.toFixed(2)}₼ geri alacaq` 
+                        : `${Math.abs(data.total).toFixed(2)}₼ ödəməlidir`}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate">
                       {data.items.join(", ")}
