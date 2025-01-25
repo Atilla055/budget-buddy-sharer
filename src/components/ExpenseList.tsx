@@ -12,6 +12,12 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Expense {
@@ -21,6 +27,7 @@ interface Expense {
   paidBy: string;
   date: string;
   image?: string | null;
+  sharedWith: string[];
 }
 
 export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
@@ -35,6 +42,7 @@ export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
             <TableHead className="whitespace-nowrap">Təsvir</TableHead>
             <TableHead className="whitespace-nowrap">Kateqoriya</TableHead>
             <TableHead className="whitespace-nowrap">Ödəyən</TableHead>
+            <TableHead className="whitespace-nowrap">Bölüşənlər</TableHead>
             <TableHead className="whitespace-nowrap">Tarix</TableHead>
             <TableHead className="whitespace-nowrap">Qəbz</TableHead>
           </TableRow>
@@ -44,12 +52,27 @@ export const ExpenseList = ({ expenses }: { expenses: Expense[] }) => {
             <TableRow key={index}>
               <TableCell className="font-medium whitespace-nowrap">
                 ₼{expense.amount.toFixed(2)}
+                <div className="text-xs text-muted-foreground">
+                  (₼{(expense.amount / expense.sharedWith.length).toFixed(2)} hər nəfərə)
+                </div>
               </TableCell>
               <TableCell className="max-w-[200px] truncate">
                 {expense.description}
               </TableCell>
               <TableCell className="whitespace-nowrap">{expense.category}</TableCell>
               <TableCell className="whitespace-nowrap">{expense.paidBy}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      {expense.sharedWith.length} nəfər
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{expense.sharedWith.join(", ")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TableCell>
               <TableCell className="whitespace-nowrap">
                 {format(new Date(expense.date), "dd.MM.yyyy HH:mm")}
               </TableCell>

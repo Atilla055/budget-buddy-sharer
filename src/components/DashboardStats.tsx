@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface Expense {
   amount: number;
   paidBy: string;
+  sharedWith: string[];
 }
 
 interface DashboardStatsProps {
@@ -11,7 +12,14 @@ interface DashboardStatsProps {
 
 export const DashboardStats = ({ expenses }: DashboardStatsProps) => {
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const perPersonShare = totalExpenses / 4;
+  
+  const calculateAverageShare = () => {
+    let totalShares = 0;
+    expenses.forEach(expense => {
+      totalShares += expense.sharedWith.length;
+    });
+    return totalExpenses / (totalShares || 1);
+  };
 
   const paidByPerson = expenses.reduce((acc, expense) => {
     acc[expense.paidBy] = (acc[expense.paidBy] || 0) + expense.amount;
@@ -32,10 +40,10 @@ export const DashboardStats = ({ expenses }: DashboardStatsProps) => {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Adam başına</CardTitle>
+          <CardTitle className="text-sm font-medium">Orta Pay</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₼{perPersonShare.toFixed(2)}</div>
+          <div className="text-2xl font-bold">₼{calculateAverageShare().toFixed(2)}</div>
         </CardContent>
       </Card>
       <Card>

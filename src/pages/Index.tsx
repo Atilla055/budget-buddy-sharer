@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { DashboardStats } from "@/components/DashboardStats";
+import { MonthlyExpenses } from "@/components/MonthlyExpenses";
 import { collection, addDoc, onSnapshot, query, orderBy, QueryDocumentSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
@@ -13,6 +14,7 @@ interface Expense {
   paidBy: string;
   date: string;
   image?: string | null;
+  sharedWith: string[];
 }
 
 const Index = () => {
@@ -24,14 +26,14 @@ const Index = () => {
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const expensesData = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => {
           const data = doc.data();
-          // Create a clean, serializable object
           return {
             amount: Number(data.amount) || 0,
             description: String(data.description || ""),
             category: String(data.category || ""),
             paidBy: String(data.paidBy || ""),
             date: String(data.date || new Date().toISOString()),
-            image: data.image ? String(data.image) : null
+            image: data.image ? String(data.image) : null,
+            sharedWith: Array.isArray(data.sharedWith) ? data.sharedWith.map(String) : ["Ehed", "Atilla", "Behruz", "Qosqar"]
           };
         });
         setExpenses(expensesData);
@@ -50,14 +52,14 @@ const Index = () => {
 
   const handleAddExpense = async (expense: Expense) => {
     try {
-      // Create a clean object before storing
       const cleanExpense = {
         amount: Number(expense.amount),
         description: String(expense.description),
         category: String(expense.category),
         paidBy: String(expense.paidBy),
         date: new Date().toISOString(),
-        image: expense.image ? String(expense.image) : null
+        image: expense.image ? String(expense.image) : null,
+        sharedWith: Array.isArray(expense.sharedWith) ? expense.sharedWith.map(String) : ["Ehed", "Atilla", "Behruz", "Qosqar"]
       };
       
       await addDoc(collection(db, "expenses"), cleanExpense);
@@ -90,9 +92,16 @@ const Index = () => {
             <ExpenseForm onSubmit={handleAddExpense} />
           </div>
           
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Son Xərclər</h2>
-            <ExpenseList expenses={expenses} />
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Son Xərclər</h2>
+              <ExpenseList expenses={expenses} />
+            </div>
+            
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Aylıq Hesabat</h2>
+              <MonthlyExpenses expenses={expenses} />
+            </div>
           </div>
         </div>
       </div>

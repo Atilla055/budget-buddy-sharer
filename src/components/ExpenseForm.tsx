@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -28,6 +29,7 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
   const [category, setCategory] = useState("");
   const [paidBy, setPaidBy] = useState("");
   const [image, setImage] = useState<string | null>(null);
+  const [sharedWith, setSharedWith] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +54,10 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       return;
     }
 
+    if (sharedWith.length === 0) {
+      setSharedWith(ROOMMATES); // If no one is selected, share with everyone
+    }
+
     onSubmit({
       amount: parseFloat(amount),
       description,
@@ -59,6 +65,7 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       paidBy,
       date: new Date().toISOString(),
       image,
+      sharedWith,
     });
 
     setAmount("");
@@ -66,11 +73,20 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
     setCategory("");
     setPaidBy("");
     setImage(null);
+    setSharedWith([]);
 
     toast({
       title: "Uğurlu",
       description: "Xərc uğurla əlavə edildi",
     });
+  };
+
+  const toggleRoommate = (roommate: string) => {
+    setSharedWith(prev =>
+      prev.includes(roommate)
+        ? prev.filter(r => r !== roommate)
+        : [...prev, roommate]
+    );
   };
 
   return (
@@ -127,6 +143,22 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Kimlər arasında bölünsün?</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {ROOMMATES.map((roommate) => (
+            <div key={roommate} className="flex items-center space-x-2">
+              <Checkbox
+                id={`share-${roommate}`}
+                checked={sharedWith.includes(roommate)}
+                onCheckedChange={() => toggleRoommate(roommate)}
+              />
+              <Label htmlFor={`share-${roommate}`}>{roommate}</Label>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-2">
