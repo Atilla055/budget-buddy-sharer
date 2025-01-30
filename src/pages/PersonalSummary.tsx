@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 
 interface Expense {
   amount: number;
@@ -43,24 +44,24 @@ const PersonalSummary = () => {
 
   const calculatePersonalExpenses = (person: string) => {
     return expenses.reduce((acc, expense) => {
+      const perPersonShare = expense.amount / expense.sharedWith.length;
+      
       if (expense.sharedWith.includes(person)) {
-        const shareAmount = expense.amount / expense.sharedWith.length;
         if (expense.paidBy === person) {
           // If this person paid, they get back others' shares
           acc.paid += expense.amount;
-          acc.share += shareAmount;
+          acc.share += perPersonShare;
         } else {
           // If they didn't pay, they owe their share
-          acc.share += shareAmount;
+          acc.share += perPersonShare;
         }
-        if (expense.sharedWith.includes(person)) {
-          acc.items.push({
-            description: expense.description,
-            date: expense.date,
-            amount: shareAmount,
-            paidBy: expense.paidBy,
-          });
-        }
+        acc.items.push({
+          description: expense.description,
+          date: expense.date,
+          amount: perPersonShare,
+          paidBy: expense.paidBy,
+          totalAmount: expense.amount,
+        });
       }
       return acc;
     }, {
@@ -71,8 +72,18 @@ const PersonalSummary = () => {
         date: string;
         amount: number;
         paidBy: string;
+        totalAmount: number;
       }>,
     });
+  };
+
+  const formatBalance = (balance: number) => {
+    if (balance > 0) {
+      return `+${balance.toFixed(2)}₼ geri alacaq`;
+    } else if (balance < 0) {
+      return `${Math.abs(balance).toFixed(2)}₼ ödəməlidir`;
+    }
+    return "0.00₼";
   };
 
   return (
@@ -89,9 +100,7 @@ const PersonalSummary = () => {
                 <CardTitle className="flex justify-between items-center">
                   <span>{person}</span>
                   <span className={balance >= 0 ? "text-green-500" : "text-red-500"}>
-                    {balance >= 0 
-                      ? `${balance.toFixed(2)}₼ geri alacaq` 
-                      : `${Math.abs(balance).toFixed(2)}₼ ödəməlidir`}
+                    {formatBalance(balance)}
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -102,18 +111,24 @@ const PersonalSummary = () => {
                       <TableHead>Tarix</TableHead>
                       <TableHead>Məhsul</TableHead>
                       <TableHead>Ödəyən</TableHead>
-                      <TableHead>Məbləğ</TableHead>
+                      <TableHead>Ümumi məbləğ</TableHead>
+                      <TableHead>Şəxsi pay</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {summary.items.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell>
-                          {new Date(item.date).toLocaleDateString()}
+                          {format(new Date(item.date), "dd.MM.yyyy")}
                         </TableCell>
                         <TableCell>{item.description}</TableCell>
                         <TableCell>{item.paidBy}</TableCell>
-                        <TableCell>{item.amount.toFixed(2)}₼</TableCell>
+                        <TableCell>{item.totalAmount.toFixed(2)}₼</TableCell>
+                        <TableCell className={item.paidBy === person ? "text-green-500" : "text-red-500"}>
+                          {item.paidBy === person 
+                            ? `+${(item.totalAmount - item.amount).toFixed(2)}₼`
+                            : `-${item.amount.toFixed(2)}₼`}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

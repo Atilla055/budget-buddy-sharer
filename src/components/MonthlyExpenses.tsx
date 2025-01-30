@@ -1,12 +1,12 @@
 import { format, parse, startOfMonth, endOfMonth } from "date-fns";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Expense {
@@ -25,13 +25,11 @@ interface MonthlyExpensesProps {
 export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
   const months = Array.from(
     new Set(
-      expenses.map((expense) =>
-        format(new Date(expense.date), "yyyy-MM")
-      )
+      expenses.map((expense) => format(new Date(expense.date), "yyyy-MM"))
     )
   ).sort().reverse();
 
-  const calculateOwed = (expenses: Expense[], month: string) => {
+  const calculateBalances = (expenses: Expense[], month: string) => {
     const startDate = startOfMonth(parse(month, "yyyy-MM", new Date()));
     const endDate = endOfMonth(parse(month, "yyyy-MM", new Date()));
 
@@ -48,19 +46,33 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
     });
 
     monthlyExpenses.forEach(expense => {
-      const shareAmount = expense.amount / expense.sharedWith.length;
+      const perPersonShare = expense.amount / expense.sharedWith.length;
       
-      // Add the full amount to what the payer has paid
+      // Add the full amount to what the payer paid
       balances[expense.paidBy].total += expense.amount;
       
-      // Subtract each person's share from their balance
+      // Subtract each person's share
       expense.sharedWith.forEach(person => {
-        balances[person].total -= shareAmount;
-        balances[person].items.push(expense.description);
+        balances[person].total -= perPersonShare;
+        balances[person].items.push(
+          `${expense.description} (${format(new Date(expense.date), "dd.MM.yyyy")})`
+        );
       });
+      
+      // Add back the payer's own share (they shouldn't pay their own share)
+      balances[expense.paidBy].total -= perPersonShare;
     });
 
     return balances;
+  };
+
+  const formatBalance = (balance: number) => {
+    if (balance > 0) {
+      return `+${balance.toFixed(2)}₼ geri alacaq`;
+    } else if (balance < 0) {
+      return `${Math.abs(balance).toFixed(2)}₼ ödəməlidir`;
+    }
+    return "0.00₼";
   };
 
   return (
@@ -82,13 +94,11 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.entries(calculateOwed(expenses, month)).map(([person, data]) => (
+                {Object.entries(calculateBalances(expenses, month)).map(([person, data]) => (
                   <TableRow key={person}>
                     <TableCell>{person}</TableCell>
                     <TableCell className={data.total >= 0 ? "text-green-500" : "text-red-500"}>
-                      {data.total >= 0 
-                        ? `${data.total.toFixed(2)}₼ geri alacaq` 
-                        : `${Math.abs(data.total).toFixed(2)}₼ ödəməlidir`}
+                      {formatBalance(data.total)}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate">
                       {data.items.join(", ")}
