@@ -54,8 +54,11 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       return;
     }
 
+    // Get all roommates except the payer for default sharing
+    const defaultSharedWith = ROOMMATES.filter(roommate => roommate !== paidBy);
+    
     if (sharedWith.length === 0) {
-      setSharedWith(ROOMMATES); // If no one is selected, share with everyone
+      setSharedWith(defaultSharedWith); // If no one is selected, share with everyone except payer
     }
 
     onSubmit({
@@ -65,7 +68,7 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       paidBy,
       date: new Date().toISOString(),
       image,
-      sharedWith,
+      sharedWith: sharedWith.length > 0 ? sharedWith : defaultSharedWith,
     });
 
     setAmount("");
@@ -88,6 +91,9 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
         : [...prev, roommate]
     );
   };
+
+  // Filter out the payer from the roommates list for sharing
+  const availableRoommates = ROOMMATES.filter(roommate => roommate !== paidBy);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-white rounded-lg shadow">
@@ -131,7 +137,10 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
 
       <div className="space-y-2">
         <Label htmlFor="paidBy">Ödəyən</Label>
-        <Select value={paidBy} onValueChange={setPaidBy}>
+        <Select value={paidBy} onValueChange={(value) => {
+          setPaidBy(value);
+          setSharedWith([]); // Reset shared with when payer changes
+        }}>
           <SelectTrigger>
             <SelectValue placeholder="Kim ödədi?" />
           </SelectTrigger>
@@ -148,7 +157,7 @@ export const ExpenseForm = ({ onSubmit }: { onSubmit: (expense: any) => void }) 
       <div className="space-y-2">
         <Label>Kimlər arasında bölünsün?</Label>
         <div className="grid grid-cols-2 gap-2">
-          {ROOMMATES.map((roommate) => (
+          {availableRoommates.map((roommate) => (
             <div key={roommate} className="flex items-center space-x-2">
               <Checkbox
                 id={`share-${roommate}`}
