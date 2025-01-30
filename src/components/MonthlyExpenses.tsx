@@ -46,10 +46,11 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
     });
 
     monthlyExpenses.forEach(expense => {
-      const perPersonShare = expense.amount / expense.sharedWith.length;
-      
       // Add the full amount to what the payer paid
       balances[expense.paidBy].total += expense.amount;
+      
+      // Calculate per person share based on sharedWith array
+      const perPersonShare = expense.amount / (expense.sharedWith.length + 1); // +1 for the payer
       
       // Subtract each person's share
       expense.sharedWith.forEach(person => {
@@ -58,9 +59,6 @@ export const MonthlyExpenses = ({ expenses }: MonthlyExpensesProps) => {
           `${expense.description} (${format(new Date(expense.date), "dd.MM.yyyy")})`
         );
       });
-      
-      // Add back the payer's own share (they shouldn't pay their own share)
-      balances[expense.paidBy].total -= perPersonShare;
     });
 
     return balances;
