@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import PersonalSummary from "./pages/PersonalSummary";
+import CreditCards from "./pages/CreditCards";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +28,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/personal" element={<PersonalSummary />} />
+              <Route path="/cards" element={<CreditCards />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
