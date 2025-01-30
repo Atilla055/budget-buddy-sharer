@@ -16,9 +16,10 @@ export const DashboardStats = ({ expenses }: DashboardStatsProps) => {
   const calculateAverageShare = () => {
     let totalShares = 0;
     expenses.forEach(expense => {
-      totalShares += expense.sharedWith.length;
+      // Include the payer in the total number of people sharing
+      totalShares += (expense.sharedWith.length + 1) * expense.amount;
     });
-    return totalExpenses / (totalShares || 1);
+    return totalExpenses / (totalShares / totalExpenses || 1);
   };
 
   const paidByPerson = expenses.reduce((acc, expense) => {
