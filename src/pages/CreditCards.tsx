@@ -3,25 +3,13 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
-import { collection, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, setDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { toast } from "@/components/ui/use-toast";
 
 interface CreditCard {
   userId: string;
   cardNumber: string;
-}
-
-interface Balance {
-  userId: string;
-  amount: number;
 }
 
 const CreditCards = () => {
@@ -29,8 +17,6 @@ const CreditCards = () => {
   const [creditCards, setCreditCards] = useState<{ [key: string]: string }>({});
   const [newCardNumber, setNewCardNumber] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
-  const [deletePassword, setDeletePassword] = useState("");
-  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
   const ROOMMATES = ["Ehed", "Atilla", "Behruz", "Qosqar"];
 
   useEffect(() => {
@@ -88,7 +74,7 @@ const CreditCards = () => {
     }
 
     try {
-      await updateDoc(doc(db, "creditCards", selectedUser), {
+      await setDoc(doc(db, "creditCards", selectedUser), {
         userId: selectedUser,
         cardNumber: newCardNumber,
       });
@@ -103,33 +89,6 @@ const CreditCards = () => {
       toast({
         title: "Xəta",
         description: "Kart əlavə etmək mümkün olmadı",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDeleteExpense = async () => {
-    if (deletePassword !== "0283" || !expenseToDelete) {
-      toast({
-        title: "Xəta",
-        description: "Yanlış şifrə",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      await deleteDoc(doc(db, "expenses", expenseToDelete));
-      setExpenseToDelete(null);
-      setDeletePassword("");
-      toast({
-        title: "Uğurlu",
-        description: "Xərc silindi",
-      });
-    } catch (error) {
-      toast({
-        title: "Xəta",
-        description: "Xərci silmək mümkün olmadı",
         variant: "destructive",
       });
     }
@@ -204,48 +163,6 @@ const CreditCards = () => {
           </CardContent>
         </Card>
       </div>
-
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Xərclər</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {expenses.map((expense) => (
-              <div key={expense.id} className="flex justify-between items-center p-4 border rounded">
-                <div>
-                  <div className="font-semibold">{expense.description}</div>
-                  <div className="text-sm text-gray-500">
-                    Ödəyən: {expense.paidBy} | Məbləğ: {expense.amount}₼
-                  </div>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      onClick={() => setExpenseToDelete(expense.id)}
-                    >
-                      Sil
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Xərci silmək üçün şifrəni daxil edin</DialogTitle>
-                    </DialogHeader>
-                    <Input
-                      type="password"
-                      placeholder="Şifrə"
-                      value={deletePassword}
-                      onChange={(e) => setDeletePassword(e.target.value)}
-                    />
-                    <Button onClick={handleDeleteExpense}>Təsdiqlə</Button>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
