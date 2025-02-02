@@ -4,7 +4,7 @@ import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { DashboardStats } from "@/components/DashboardStats";
 import { MonthlyExpenses } from "@/components/MonthlyExpenses";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -118,14 +118,52 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Ev Xərcləri</h1>
-          <Link to="/cards">
-            <Button variant="outline" className="gap-2">
-              <CreditCard className="h-4 w-4" />
-              Kart Məlumatları və Balanslar
-            </Button>
-          </Link>
+        <div className="flex flex-col gap-4 mb-8">
+          <div className="flex justify-between items-center">
+            <h1 className="text-4xl font-bold text-gray-900">Ev Xərcləri</h1>
+            <Link to="/cards">
+              <Button variant="outline" className="gap-2">
+                <CreditCard className="h-4 w-4" />
+                Kart Məlumatları və Balanslar
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-[1fr,auto] items-start">
+            {expenses.map((expense: any) => (
+              <div key={expense.id} className="bg-white p-4 rounded-lg shadow-sm border flex justify-between items-center">
+                <div>
+                  <div className="font-semibold">{expense.description}</div>
+                  <div className="text-sm text-gray-500">
+                    Ödəyən: {expense.paidBy} | Məbləğ: {expense.amount}₼
+                  </div>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setExpenseToDelete(expense.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Xərci silmək üçün şifrəni daxil edin</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                      type="password"
+                      placeholder="Şifrə"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                    />
+                    <Button onClick={handleDeleteExpense}>Təsdiqlə</Button>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            ))}
+          </div>
         </div>
         
         <div className="mb-8">
@@ -141,41 +179,7 @@ const Index = () => {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Son Xərclər</h2>
-              <div className="space-y-4">
-                {expenses.map((expense: any) => (
-                  <div key={expense.id} className="bg-white p-4 rounded-lg shadow-sm border flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold">{expense.description}</div>
-                      <div className="text-sm text-gray-500">
-                        Ödəyən: {expense.paidBy} | Məbləğ: {expense.amount}₼
-                      </div>
-                    </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setExpenseToDelete(expense.id)}
-                        >
-                          Sil
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Xərci silmək üçün şifrəni daxil edin</DialogTitle>
-                        </DialogHeader>
-                        <Input
-                          type="password"
-                          placeholder="Şifrə"
-                          value={deletePassword}
-                          onChange={(e) => setDeletePassword(e.target.value)}
-                        />
-                        <Button onClick={handleDeleteExpense}>Təsdiqlə</Button>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                ))}
-              </div>
+              <ExpenseList expenses={expenses} />
             </div>
             
             <div>
