@@ -41,15 +41,18 @@ interface Expense {
 interface ExpenseListProps {
   expenses: Expense[];
   onDeleteExpense?: (id: string) => Promise<void>;
+  showDeleteButton?: boolean;
 }
 
-export const ExpenseList = ({ expenses, onDeleteExpense }: ExpenseListProps) => {
+export const ExpenseList = ({ expenses, onDeleteExpense, showDeleteButton = true }: ExpenseListProps) => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [deletePassword, setDeletePassword] = useState("");
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
+    if (!id || !onDeleteExpense) return;
+    
     if (deletePassword !== "0283") {
       toast({
         title: "Xəta",
@@ -59,13 +62,20 @@ export const ExpenseList = ({ expenses, onDeleteExpense }: ExpenseListProps) => 
       return;
     }
 
-    if (onDeleteExpense) {
+    try {
       await onDeleteExpense(id);
       setDeletePassword("");
       setExpenseToDelete(null);
       toast({
         title: "Uğurlu",
         description: "Xərc silindi",
+      });
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      toast({
+        title: "Xəta",
+        description: "Xərci silmək mümkün olmadı",
+        variant: "destructive",
       });
     }
   };
@@ -82,7 +92,7 @@ export const ExpenseList = ({ expenses, onDeleteExpense }: ExpenseListProps) => 
             <TableHead className="whitespace-nowrap">Bölüşənlər</TableHead>
             <TableHead className="whitespace-nowrap">Tarix</TableHead>
             <TableHead className="whitespace-nowrap">Qəbz</TableHead>
-            <TableHead className="whitespace-nowrap">Sil</TableHead>
+            {showDeleteButton && <TableHead className="whitespace-nowrap">Sil</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -137,44 +147,46 @@ export const ExpenseList = ({ expenses, onDeleteExpense }: ExpenseListProps) => 
                   </Dialog>
                 )}
               </TableCell>
-              <TableCell>
-                {expenseToDelete === expense.id ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="password"
-                      placeholder="Şifrə"
-                      value={deletePassword}
-                      onChange={(e) => setDeletePassword(e.target.value)}
-                      className="w-24"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(expense.id!)}
-                    >
-                      Sil
-                    </Button>
+              {showDeleteButton && (
+                <TableCell>
+                  {expenseToDelete === expense.id ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="password"
+                        placeholder="Şifrə"
+                        value={deletePassword}
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                        className="w-24"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(expense.id!)}
+                      >
+                        Sil
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setExpenseToDelete(null);
+                          setDeletePassword("");
+                        }}
+                      >
+                        Ləğv et
+                      </Button>
+                    </div>
+                  ) : (
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        setExpenseToDelete(null);
-                        setDeletePassword("");
-                      }}
+                      onClick={() => setExpenseToDelete(expense.id!)}
                     >
-                      Ləğv et
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setExpenseToDelete(expense.id!)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </TableCell>
+                  )}
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
