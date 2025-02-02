@@ -4,21 +4,14 @@ import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { DashboardStats } from "@/components/DashboardStats";
 import { MonthlyExpenses } from "@/components/MonthlyExpenses";
-import { CreditCard, Trash2 } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { collection, addDoc, onSnapshot, query, orderBy, QueryDocumentSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
 
 interface Expense {
+  id?: string;
   amount: number;
   description: string;
   category: string;
@@ -30,8 +23,6 @@ interface Expense {
 
 const Index = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [deletePassword, setDeletePassword] = useState("");
-  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -88,30 +79,21 @@ const Index = () => {
     }
   };
 
-  const handleDeleteExpense = async () => {
-    if (deletePassword !== "0283" || !expenseToDelete) {
-      toast({
-        title: "Xəta",
-        description: "Yanlış şifrə",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleDeleteExpense = async (id: string) => {
     try {
-      await deleteDoc(doc(db, "expenses", expenseToDelete));
-      setExpenseToDelete(null);
-      setDeletePassword("");
+      await deleteDoc(doc(db, "expenses", id));
       toast({
         title: "Uğurlu",
         description: "Xərc silindi",
       });
     } catch (error) {
+      console.error("Error deleting expense:", error);
       toast({
         title: "Xəta",
         description: "Xərci silmək mümkün olmadı",
         variant: "destructive",
       });
+      throw error; // Re-throw the error to be caught by the ExpenseList component
     }
   };
 
@@ -128,42 +110,6 @@ const Index = () => {
               </Button>
             </Link>
           </div>
-          
-          <div className="grid gap-4 md:grid-cols-[1fr,auto] items-start">
-            {expenses.map((expense: any) => (
-              <div key={expense.id} className="bg-white p-4 rounded-lg shadow-sm border flex justify-between items-center">
-                <div>
-                  <div className="font-semibold">{expense.description}</div>
-                  <div className="text-sm text-gray-500">
-                    Ödəyən: {expense.paidBy} | Məbləğ: {expense.amount}₼
-                  </div>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setExpenseToDelete(expense.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Xərci silmək üçün şifrəni daxil edin</DialogTitle>
-                    </DialogHeader>
-                    <Input
-                      type="password"
-                      placeholder="Şifrə"
-                      value={deletePassword}
-                      onChange={(e) => setDeletePassword(e.target.value)}
-                    />
-                    <Button onClick={handleDeleteExpense}>Təsdiqlə</Button>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            ))}
-          </div>
         </div>
         
         <div className="mb-8">
@@ -179,7 +125,11 @@ const Index = () => {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Son Xərclər</h2>
-              <ExpenseList expenses={expenses} />
+              <ExpenseList 
+                expenses={expenses} 
+                onDeleteExpense={handleDeleteExpense}
+                showDeleteButton={true}
+              />
             </div>
             
             <div>
