@@ -154,7 +154,7 @@ const CreditCards = () => {
                   </div>
                   <div className="text-sm text-gray-500">
                     {creditCards[person]
-                      ? `**** **** **** ${creditCards[person].slice(-4)}`
+                      ? creditCards[person]
                       : "Kart əlavə edilməyib"}
                   </div>
                 </div>
